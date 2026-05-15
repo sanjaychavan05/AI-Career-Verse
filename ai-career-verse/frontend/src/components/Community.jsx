@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Users, MessageSquare, Heart, Share2, TrendingUp, Award, Clock, UserPlus, CheckCircle2, XCircle, Loader2, GraduationCap, Shield, X, User } from 'lucide-react';
 import { useGamification } from '../context/GamificationContext';
 import { useUser } from '../context/UserContext';
+import { usePlatform } from '../context/PlatformContext';
 import axios from 'axios';
 
 const CHANNELS = ['General', 'Interview Tips', 'Project Ideas', 'Career Advice', 'Code Review'];
@@ -18,23 +19,21 @@ const POSTS = [
 const AVATAR_COLORS = { PS: 'from-pink-500 to-rose-600', RP: 'from-blue-500 to-indigo-600', SR: 'from-cyan-500 to-teal-600', AM: 'from-violet-500 to-purple-600', KN: 'from-amber-500 to-orange-600' };
 
 export default function Community() {
-  const { stats, userId } = useGamification();
+  const { stats } = useGamification();
+  const { user } = useUser();
+  const { mentorRequests, sendMentorRequest, acceptRequest, rejectRequest } = usePlatform();
+  const userRole = user?.role || 'STUDENT';
+  const userName = user?.name || 'Sanjay Chavan';
+
   const [activeChannel, setActiveChannel] = useState('General');
   const [liked, setLiked] = useState(new Set());
   const [showMentorModal, setShowMentorModal] = useState(false);
   const [showPendingModal, setShowPendingModal] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(null);
-  const [mentors, setMentors] = useState([]);
-  const [pendingRequests, setPendingRequests] = useState([]);
   const [leaderboard, setLeaderboard] = useState([]);
-  const [requestMessage, setRequestMessage] = useState('');
-  const [selectedMentor, setSelectedMentor] = useState(null);
-  const [sending, setSending] = useState(false);
-  const [respondingId, setRespondingId] = useState(null);
-  const [myRequests, setMyRequests] = useState([]);
 
-  const { user } = useUser();
-  const userRole = user?.role || 'STUDENT';
+  const pendingForMe = mentorRequests.filter(r => r.status === 'pending');
+  const myRequests = mentorRequests.filter(r => r.student === userName);
 
   useEffect(() => {
     axios.get('/api/gamification/leaderboard')
@@ -46,51 +45,21 @@ export default function Community() {
         { name: 'Sneha Reddy', xp: 8900, streak: 12, careerReadiness: 79, role: 'DevOps Engineer' },
         { name: 'Kavya Nair', xp: 7600, streak: 9, careerReadiness: 74, role: 'ML Engineer' },
       ]));
+  }, []);
 
-    // Always fetch mentors for mentor request modal
-    axios.get('/api/mentorship/mentors').then(({ data }) => setMentors(data)).catch(() => {
-      setMentors([
-        { id: 2, name: 'Priya Sharma', title: 'Senior Full Stack Developer', xp: 11200, skills: 'React.js,Node.js,TypeScript,AWS' },
-        { id: 3, name: 'Rahul Patel', title: 'Backend Engineer', xp: 9800, skills: 'Java,Spring Boot,Microservices,System Design' },
-      ]);
-    });
-    axios.get(`/api/mentorship/student/${userId}`).then(({ data }) => setMyRequests(data)).catch(() => {});
-    if (userRole === 'MENTOR') {
-      axios.get(`/api/mentorship/pending/${userId}`).then(({ data }) => setPendingRequests(data)).catch(() => {
-        setPendingRequests([
-          { id: 1, studentName: 'Sneha Reddy', message: 'Would love guidance on system design interviews and career planning.', createdAt: new Date().toISOString(), status: 'PENDING' },
-          { id: 2, studentName: 'Kavya Nair', message: 'Need help with ML engineering career path and project guidance.', createdAt: new Date(Date.now() - 86400000).toISOString(), status: 'PENDING' },
-          { id: 3, studentName: 'Arjun Mehta', message: 'Looking for mentorship on Python Full Stack development best practices.', createdAt: new Date(Date.now() - 172800000).toISOString(), status: 'PENDING' },
-        ]);
-      });
-    }
-  }, [userRole, userId]);
-
-  const handleRequestMentorship = async () => {
-    if (!selectedMentor) return;
-    setSending(true);
-    try {
-      await axios.post('/api/mentorship/request', { studentId: userId, mentorId: selectedMentor.id, message: requestMessage || 'I would love to be mentored by you!' });
-      setShowMentorModal(false); setRequestMessage(''); setSelectedMentor(null);
-      const { data } = await axios.get(`/api/mentorship/student/${userId}`);
-      setMyRequests(data);
-    } catch { } finally { setSending(false); }
+  const handleRequestMentorship = () => {
+    sendMentorRequest(userName);
+    setShowMentorModal(false);
   };
 
-  const handleRespond = async (requestId, accept) => {
-    setRespondingId(requestId);
-    try {
-      await axios.put(`/api/mentorship/respond/${requestId}`, { mentorId: userId, accept });
-      setPendingRequests(prev => prev.filter(r => r.id !== requestId));
-    } catch {
-      // Fallback: just remove from UI
-      setPendingRequests(prev => prev.filter(r => r.id !== requestId));
-    } finally { setRespondingId(null); }
+  const handleRespond = (requestId, accept) => {
+    if (accept) acceptRequest(requestId);
+    else rejectRequest(requestId);
   };
 
   const openProfile = (name) => {
-    const user = leaderboard.find(u => u.name === name) || POSTS.find(p => p.author === name);
-    if (user) setShowProfileModal({ name: user.name || user.author, role: user.role, xp: user.xp || 0, streak: user.streak || 0, readiness: user.careerReadiness || 0, avatar: (user.name || user.author || '').split(' ').map(w => w[0]).join('') });
+    const u = leaderboard.find(l => l.name === name) || POSTS.find(p => p.author === name);
+    if (u) setShowProfileModal({ name: u.name || u.author, role: u.role, xp: u.xp || 0, streak: u.streak || 0, readiness: u.careerReadiness || 0, avatar: (u.name || u.author || '').split(' ').map(w => w[0]).join('') });
   };
 
   const filteredPosts = activeChannel === 'General' ? POSTS : POSTS.filter(p => p.channel === activeChannel);
@@ -111,8 +80,8 @@ export default function Community() {
           {(userRole === 'MENTOR' || userRole === 'TEACHER') && (
             <button onClick={() => setShowPendingModal(true)} className="btn-primary flex items-center gap-2 text-sm relative">
               <Shield size={14} /> Pending Requests
-              {pendingRequests.length > 0 && (
-                <span className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center">{pendingRequests.length}</span>
+              {pendingForMe.length > 0 && (
+                <span className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center">{pendingForMe.length}</span>
               )}
             </button>
           )}
@@ -122,7 +91,6 @@ export default function Community() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
         {/* Posts Feed */}
         <div className="lg:col-span-2 space-y-4">
-          {/* Channel Tabs */}
           <div className="flex gap-2 flex-wrap">
             {CHANNELS.map(c => (
               <button key={c} onClick={() => setActiveChannel(c)}
@@ -132,22 +100,17 @@ export default function Community() {
             ))}
           </div>
 
-          {/* Posts */}
           {filteredPosts.map(post => {
             const isLiked = liked.has(post.id);
             return (
-              <motion.div key={post.id} initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }}
-                className="glass-card p-5">
+              <motion.div key={post.id} initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} className="glass-card p-5">
                 <div className="flex items-start gap-3">
                   <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${AVATAR_COLORS[post.avatar] || 'from-violet-500 to-indigo-600'} flex items-center justify-center text-white text-xs font-bold flex-shrink-0`}>
                     {post.avatar}
                   </div>
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
-                      <button onClick={() => openProfile(post.author)}
-                        className="text-sm font-bold dark:text-white text-gray-900 hover:text-violet-400 transition-colors cursor-pointer">
-                        {post.author}
-                      </button>
+                      <button onClick={() => openProfile(post.author)} className="text-sm font-bold dark:text-white text-gray-900 hover:text-violet-400 transition-colors cursor-pointer">{post.author}</button>
                       <span className="text-xs dark:text-gray-600 text-gray-400">{post.role}</span>
                       {post.tag && <span className="text-[10px] font-bold px-2 py-0.5 rounded-full dark:bg-white/[0.04] bg-gray-100 dark:text-gray-400 text-gray-500">{post.tag}</span>}
                     </div>
@@ -168,7 +131,7 @@ export default function Community() {
           })}
         </div>
 
-        {/* Sidebar — Leaderboard */}
+        {/* Sidebar */}
         <div className="space-y-4">
           <div className="glass-card p-5">
             <h3 className="text-xs font-bold dark:text-gray-300 text-gray-600 uppercase tracking-wider mb-3 flex items-center gap-2">
@@ -181,10 +144,7 @@ export default function Community() {
                     i === 0 ? 'bg-amber-400 text-black' : i === 1 ? 'bg-gray-400 text-white' : i === 2 ? 'bg-orange-600 text-white' : 'dark:bg-white/[0.04] bg-gray-100 dark:text-gray-500 text-gray-400'
                   }`}>{i + 1}</span>
                   <div className="flex-1 min-w-0">
-                    <button onClick={() => openProfile(u.name)}
-                      className="text-sm font-bold dark:text-white text-gray-900 truncate block hover:text-violet-400 transition-colors cursor-pointer">
-                      {u.name}
-                    </button>
+                    <button onClick={() => openProfile(u.name)} className="text-sm font-bold dark:text-white text-gray-900 truncate block hover:text-violet-400 transition-colors cursor-pointer">{u.name}</button>
                     <p className="text-[10px] dark:text-gray-600 text-gray-400">{u.role}</p>
                   </div>
                   <span className="text-xs font-bold font-mono text-violet-400">{(u.xp || 0).toLocaleString()}</span>
@@ -212,69 +172,55 @@ export default function Community() {
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm" onClick={() => setShowProfileModal(null)}>
             <motion.div initial={{ scale: 0.9 }} animate={{ scale: 1 }} exit={{ scale: 0.9 }}
-              className="w-full max-w-sm rounded-2xl p-6 dark:bg-[#0D1117] bg-white border dark:border-white/[0.06] border-gray-200 shadow-2xl text-center"
+              className="w-full max-w-sm rounded-2xl p-6 dark:bg-[#0D1117] bg-white border dark:border-white/[0.06] border-gray-200 shadow-2xl text-center relative"
               onClick={e => e.stopPropagation()}>
-              <button onClick={() => setShowProfileModal(null)} className="absolute top-4 right-4 w-8 h-8 rounded-lg dark:bg-white/[0.04] bg-gray-100 flex items-center justify-center">
-                <X size={14} className="dark:text-gray-400 text-gray-500" />
-              </button>
-              <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center text-white text-2xl font-bold mx-auto mb-3">
-                {showProfileModal.avatar}
-              </div>
+              <button onClick={() => setShowProfileModal(null)} className="absolute top-4 right-4 w-8 h-8 rounded-lg dark:bg-white/[0.04] bg-gray-100 flex items-center justify-center"><X size={14} className="dark:text-gray-400 text-gray-500" /></button>
+              <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center text-white text-2xl font-bold mx-auto mb-3">{showProfileModal.avatar}</div>
               <h3 className="text-lg font-bold dark:text-white text-gray-900">{showProfileModal.name}</h3>
               <p className="text-sm dark:text-gray-400 text-gray-500">{showProfileModal.role}</p>
               <div className="grid grid-cols-3 gap-3 mt-4">
-                <div className="p-3 rounded-xl dark:bg-white/[0.03] bg-gray-50">
-                  <p className="text-lg font-extrabold font-mono text-violet-400">{(showProfileModal.xp || 0).toLocaleString()}</p>
-                  <p className="text-[9px] dark:text-gray-500 text-gray-400 uppercase">XP</p>
-                </div>
-                <div className="p-3 rounded-xl dark:bg-white/[0.03] bg-gray-50">
-                  <p className="text-lg font-extrabold font-mono text-amber-400">{showProfileModal.streak}</p>
-                  <p className="text-[9px] dark:text-gray-500 text-gray-400 uppercase">Streak</p>
-                </div>
-                <div className="p-3 rounded-xl dark:bg-white/[0.03] bg-gray-50">
-                  <p className="text-lg font-extrabold font-mono text-cyan-400">{showProfileModal.readiness}%</p>
-                  <p className="text-[9px] dark:text-gray-500 text-gray-400 uppercase">Ready</p>
-                </div>
+                <div className="p-3 rounded-xl dark:bg-white/[0.03] bg-gray-50"><p className="text-lg font-extrabold font-mono text-violet-400">{(showProfileModal.xp || 0).toLocaleString()}</p><p className="text-[9px] dark:text-gray-500 text-gray-400 uppercase">XP</p></div>
+                <div className="p-3 rounded-xl dark:bg-white/[0.03] bg-gray-50"><p className="text-lg font-extrabold font-mono text-amber-400">{showProfileModal.streak}</p><p className="text-[9px] dark:text-gray-500 text-gray-400 uppercase">Streak</p></div>
+                <div className="p-3 rounded-xl dark:bg-white/[0.03] bg-gray-50"><p className="text-lg font-extrabold font-mono text-cyan-400">{showProfileModal.readiness}%</p><p className="text-[9px] dark:text-gray-500 text-gray-400 uppercase">Ready</p></div>
               </div>
             </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Mentor Request Modal */}
+      {/* Mentor Request Modal (Student) */}
       <AnimatePresence>
         {showMentorModal && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm" onClick={() => setShowMentorModal(false)}>
             <motion.div initial={{ scale: 0.9 }} animate={{ scale: 1 }} exit={{ scale: 0.9 }}
-              className="w-full max-w-lg mx-4 rounded-2xl p-6 dark:bg-[#0D1117] bg-white border dark:border-white/[0.06] border-gray-200 shadow-2xl"
+              className="w-full max-w-md mx-4 rounded-2xl p-6 dark:bg-[#0D1117] bg-white border dark:border-white/[0.06] border-gray-200 shadow-2xl"
               onClick={e => e.stopPropagation()}>
               <div className="flex items-center justify-between mb-5">
                 <h3 className="text-lg font-bold dark:text-white text-gray-900">Request Mentorship</h3>
                 <button onClick={() => setShowMentorModal(false)} className="w-8 h-8 rounded-lg dark:bg-white/[0.04] bg-gray-100 flex items-center justify-center"><X size={14} /></button>
               </div>
-              <div className="space-y-3 mb-4">
-                {mentors.map(m => (
-                  <button key={m.id} onClick={() => setSelectedMentor(m)}
-                    className={`w-full p-4 rounded-xl text-left transition-all border ${selectedMentor?.id === m.id ? 'dark:bg-violet-500/10 bg-violet-50 dark:border-violet-500/20 border-violet-200' : 'dark:bg-white/[0.03] bg-gray-50 dark:border-white/[0.04] border-gray-200/40'}`}>
-                    <p className="text-sm font-bold dark:text-white text-gray-900">{m.name}</p>
-                    <p className="text-xs dark:text-gray-400 text-gray-500">{m.title}</p>
-                    <p className="text-[10px] dark:text-gray-500 text-gray-400 mt-1">{m.skills}</p>
-                  </button>
-                ))}
-              </div>
-              <textarea value={requestMessage} onChange={e => setRequestMessage(e.target.value)}
-                placeholder="Why do you want this mentor? (optional)" className="input-field resize-none mb-3" rows={3} />
-              <button onClick={handleRequestMentorship} disabled={!selectedMentor || sending}
-                className="btn-primary w-full flex items-center justify-center gap-2">
-                {sending ? <><Loader2 size={14} className="animate-spin" /> Sending...</> : <><UserPlus size={14} /> Send Request</>}
+              <p className="text-sm dark:text-gray-400 text-gray-500 mb-4">Send a mentorship request. The mentor will see it on their dashboard and can accept/decline.</p>
+              {myRequests.length > 0 ? (
+                <div className="space-y-2 mb-4">
+                  <p className="text-xs font-bold dark:text-gray-400 text-gray-500 uppercase">Your Requests</p>
+                  {myRequests.map(r => (
+                    <div key={r.id} className="flex items-center justify-between p-3 rounded-xl dark:bg-white/[0.02] bg-gray-50 border dark:border-white/[0.04] border-gray-200/40">
+                      <span className="text-sm dark:text-gray-300 text-gray-600">Mentorship Request</span>
+                      <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${r.status === 'accepted' ? 'bg-emerald-500/10 text-emerald-400' : r.status === 'rejected' ? 'bg-red-500/10 text-red-400' : 'bg-amber-500/10 text-amber-400'}`}>{r.status}</span>
+                    </div>
+                  ))}
+                </div>
+              ) : null}
+              <button onClick={handleRequestMentorship} className="btn-primary w-full flex items-center justify-center gap-2">
+                <UserPlus size={14} /> Send Mentorship Request
               </button>
             </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Pending Requests Modal (Mentor View) */}
+      {/* Pending Requests Modal (Mentor/Teacher) */}
       <AnimatePresence>
         {showPendingModal && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
@@ -286,27 +232,25 @@ export default function Community() {
                 <h3 className="text-lg font-bold dark:text-white text-gray-900">Pending Mentorship Requests</h3>
                 <button onClick={() => setShowPendingModal(false)} className="w-8 h-8 rounded-lg dark:bg-white/[0.04] bg-gray-100 flex items-center justify-center"><X size={14} /></button>
               </div>
-              {pendingRequests.length === 0 ? (
+              {pendingForMe.length === 0 ? (
                 <div className="text-center py-8">
                   <Shield size={32} className="text-violet-400 mx-auto mb-3 opacity-40" />
                   <p className="text-sm dark:text-gray-500 text-gray-400">No pending requests</p>
                 </div>
               ) : (
                 <div className="space-y-3">
-                  {pendingRequests.map(req => (
+                  {pendingForMe.map(req => (
                     <div key={req.id} className="p-4 rounded-xl dark:bg-white/[0.03] bg-gray-50 border dark:border-white/[0.04] border-gray-200/40">
                       <div className="flex items-center justify-between mb-2">
-                        <p className="text-sm font-bold dark:text-white text-gray-900">{req.studentName}</p>
-                        <span className="text-[10px] dark:text-gray-600 text-gray-400">{new Date(req.createdAt).toLocaleDateString()}</span>
+                        <p className="text-sm font-bold dark:text-white text-gray-900">{req.student}</p>
+                        <span className="text-[10px] dark:text-gray-600 text-gray-400">{new Date(req.date).toLocaleDateString()}</span>
                       </div>
-                      <p className="text-sm dark:text-gray-400 text-gray-500 mb-3">{req.message}</p>
+                      <p className="text-sm dark:text-gray-400 text-gray-500 mb-3">Requesting mentorship guidance</p>
                       <div className="flex gap-2">
-                        <button onClick={() => handleRespond(req.id, true)} disabled={respondingId === req.id}
-                          className="flex-1 px-3 py-2 rounded-xl bg-green-600 text-white text-sm font-semibold flex items-center justify-center gap-1.5 hover:bg-green-500 transition-colors">
+                        <button onClick={() => handleRespond(req.id, true)} className="flex-1 px-3 py-2 rounded-xl bg-green-600 text-white text-sm font-semibold flex items-center justify-center gap-1.5 hover:bg-green-500 transition-colors">
                           <CheckCircle2 size={13} /> Accept
                         </button>
-                        <button onClick={() => handleRespond(req.id, false)} disabled={respondingId === req.id}
-                          className="flex-1 px-3 py-2 rounded-xl bg-red-600/80 text-white text-sm font-semibold flex items-center justify-center gap-1.5 hover:bg-red-500 transition-colors">
+                        <button onClick={() => handleRespond(req.id, false)} className="flex-1 px-3 py-2 rounded-xl bg-red-600/80 text-white text-sm font-semibold flex items-center justify-center gap-1.5 hover:bg-red-500 transition-colors">
                           <XCircle size={13} /> Decline
                         </button>
                       </div>

@@ -56,15 +56,15 @@ export default function JobPortal() {
 
   const handleAddJob = () => {
     if (!newJob.title || !newJob.company) return;
-    const job = {
-      id: Date.now(),
+    addJob({
       ...newJob,
       skills: newJob.skills.split(',').map(s => s.trim()).filter(Boolean),
       applicants: 0,
-    };
-    setJobs(prev => [job, ...prev]);
+      postedBy: userName,
+      postedRole: userRole,
+    });
     setShowAddJob(false);
-    setNewJob({ title: '', company: '', location: '', type: 'Full-time', salary: '', exp: '', skills: '', desc: '' });
+    setNewJob({ title:'', company:'', location:'', type:'Full-time', salary:'', exp:'', skills:'', desc:'' });
   };
 
   return (
