@@ -89,14 +89,40 @@ export default function InterviewLab() {
 
   const formatTime = (s) => `${Math.floor(s / 60).toString().padStart(2, '0')}:${(s % 60).toString().padStart(2, '0')}`;
 
-  // Speak question aloud
+  // Speak question aloud with a smooth female voice
   const speakQuestion = (text) => {
-    if ('speechSynthesis' in window) {
-      window.speechSynthesis.cancel();
-      const utter = new SpeechSynthesisUtterance(text);
-      utter.rate = 0.9;
-      utter.pitch = 1;
+    if (!('speechSynthesis' in window)) return;
+    window.speechSynthesis.cancel();
+    const utter = new SpeechSynthesisUtterance(text);
+    utter.rate = 0.92;
+    utter.pitch = 1.15;
+    utter.volume = 1;
+    // Pick best female voice available
+    const pickFemaleVoice = () => {
+      const voices = window.speechSynthesis.getVoices();
+      const preferred = [
+        'Google UK English Female', 'Microsoft Zira', 'Samantha',
+        'Karen', 'Victoria', 'Google US English', 'Fiona',
+        'Microsoft Hazel', 'Google UK English Male'
+      ];
+      for (const name of preferred) {
+        const v = voices.find(voice => voice.name.includes(name));
+        if (v) return v;
+      }
+      // Fallback: any female-sounding English voice
+      const femaleVoice = voices.find(v => v.lang.startsWith('en') && /female|woman|zira|samantha|karen|victoria|fiona|hazel/i.test(v.name));
+      return femaleVoice || voices.find(v => v.lang.startsWith('en')) || voices[0];
+    };
+    const voices = window.speechSynthesis.getVoices();
+    if (voices.length > 0) {
+      utter.voice = pickFemaleVoice();
       window.speechSynthesis.speak(utter);
+    } else {
+      // Voices load async in some browsers
+      window.speechSynthesis.onvoiceschanged = () => {
+        utter.voice = pickFemaleVoice();
+        window.speechSynthesis.speak(utter);
+      };
     }
   };
 

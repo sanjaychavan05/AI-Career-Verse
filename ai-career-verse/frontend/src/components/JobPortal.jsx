@@ -3,18 +3,17 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Search, MapPin, IndianRupee, Clock, ExternalLink, Heart, Filter, Sparkles, CheckCircle2, Briefcase, Plus, X } from 'lucide-react';
 import { useGamification } from '../context/GamificationContext';
 import { useUser } from '../context/UserContext';
+import { usePlatform } from '../context/PlatformContext';
 
 const USER_SKILLS = ['Python', 'Django', 'React', 'Node.js', 'PostgreSQL', 'Flask', 'JavaScript', 'Docker', 'Git', 'Tailwind CSS', 'Java', 'Spring Boot'];
 const FILTERS = ['All', 'Full-time', 'Frontend', 'Backend', 'DevOps', 'Remote'];
 
 const DEFAULT_JOBS = [
-  { id:1, title:'Senior Frontend Engineer', company:'Nexora AI', location:'Bangalore, IN', type:'Full-time', salary:'₹25L - ₹40L', exp:'5+ years', applicants:127, skills:['React','TypeScript','GraphQL','TailwindCSS'], desc:'Lead the frontend architecture for our AI-powered analytics platform, working with cutting-edge technologies.' },
-  { id:2, title:'Full-Stack Developer', company:'PixStack', location:'Mumbai, IN', type:'Remote', salary:'₹18L - ₹30L', exp:'3+ years', applicants:89, skills:['React','Node.js','PostgreSQL','Docker'], desc:'Build end-to-end features for a high-traffic SaaS platform serving 50K+ users.' },
-  { id:3, title:'Backend Engineer - AI Platform', company:'QuantumByte', location:'Hyderabad, IN', type:'Full-time', salary:'₹22L - ₹35L', exp:'4+ years', applicants:106, skills:['Python','Django','PostgreSQL','Redis','Docker'], desc:'Design and scale backend microservices powering AI/ML pipelines.' },
-  { id:4, title:'DevOps Lead', company:'CloudEdge Systems', location:'Pune, IN', type:'Remote', salary:'₹28L - ₹45L', exp:'5+ years', applicants:64, skills:['Docker','Kubernetes','AWS','Terraform','Python'], desc:'Lead cloud infrastructure strategy and CI/CD pipeline optimization.' },
-  { id:5, title:'Python Full Stack Developer', company:'DataForge', location:'Bangalore, IN', type:'Remote', salary:'₹18L - ₹30L', exp:'2+ years', applicants:203, skills:['Python','Django','React','PostgreSQL','Git'], desc:'Build data-intensive web applications with a focus on performance and scalability.' },
-  { id:6, title:'Java Backend Engineer', company:'TechServe India', location:'Chennai, IN', type:'Full-time', salary:'₹20L - ₹35L', exp:'3+ years', applicants:78, skills:['Java','Spring Boot','Microservices','PostgreSQL','Docker'], desc:'Design and develop enterprise-grade backend services using Spring Boot and microservices architecture.' },
-  { id:7, title:'Machine Learning Engineer', company:'NeuralPath', location:'Chennai, IN', type:'Full-time', salary:'₹30L - ₹50L', exp:'3+ years', applicants:45, skills:['Python','TensorFlow','PyTorch','SQL','Docker'], desc:'Develop and deploy ML models for real-time recommendation systems.' },
+  { id:1, title:'Senior Frontend Engineer', company:'Nexora AI', location:'Bangalore, IN', type:'Full-time', salary:'₹25L - ₹40L', exp:'5+ years', applicants:127, skills:['React','TypeScript','GraphQL','TailwindCSS'], desc:'Lead the frontend architecture for our AI-powered analytics platform.', postedBy:'Platform', postedRole:'SYSTEM', applied:[] },
+  { id:2, title:'Full-Stack Developer', company:'PixStack', location:'Mumbai, IN', type:'Remote', salary:'₹18L - ₹30L', exp:'3+ years', applicants:89, skills:['React','Node.js','PostgreSQL','Docker'], desc:'Build end-to-end features for a high-traffic SaaS platform.', postedBy:'Platform', postedRole:'SYSTEM', applied:[] },
+  { id:3, title:'Backend Engineer - AI Platform', company:'QuantumByte', location:'Hyderabad, IN', type:'Full-time', salary:'₹22L - ₹35L', exp:'4+ years', applicants:106, skills:['Python','Django','PostgreSQL','Redis','Docker'], desc:'Design and scale backend microservices powering AI/ML pipelines.', postedBy:'Platform', postedRole:'SYSTEM', applied:[] },
+  { id:4, title:'DevOps Lead', company:'CloudEdge Systems', location:'Pune, IN', type:'Remote', salary:'₹28L - ₹45L', exp:'5+ years', applicants:64, skills:['Docker','Kubernetes','AWS','Terraform','Python'], desc:'Lead cloud infrastructure strategy.', postedBy:'Platform', postedRole:'SYSTEM', applied:[] },
+  { id:5, title:'Python Full Stack Developer', company:'DataForge', location:'Bangalore, IN', type:'Remote', salary:'₹18L - ₹30L', exp:'2+ years', applicants:203, skills:['Python','Django','React','PostgreSQL','Git'], desc:'Build data-intensive web applications.', postedBy:'Platform', postedRole:'SYSTEM', applied:[] },
 ];
 
 function calcMatch(jobSkills) {
@@ -24,31 +23,35 @@ function calcMatch(jobSkills) {
 
 export default function JobPortal() {
   const { stats } = useGamification();
+  const { user } = useUser();
+  const { jobs: platformJobs, addJob, applyJob } = usePlatform();
+  const userRole = user?.role || 'STUDENT';
+  const userName = user?.name || 'Sanjay Chavan';
+
   const [filter, setFilter] = useState('All');
   const [selected, setSelected] = useState(null);
   const [saved, setSaved] = useState(new Set());
   const [search, setSearch] = useState('');
-  const [jobs, setJobs] = useState(DEFAULT_JOBS);
   const [applied, setApplied] = useState(new Set());
   const [showAddJob, setShowAddJob] = useState(false);
-  const [newJob, setNewJob] = useState({
-    title: '', company: '', location: '', type: 'Full-time', salary: '', exp: '', skills: '', desc: '',
-  });
+  const [newJob, setNewJob] = useState({ title:'', company:'', location:'', type:'Full-time', salary:'', exp:'', skills:'', desc:'' });
 
-  const { user } = useUser();
-  const userRole = user?.role || 'STUDENT';
   const canAddJobs = userRole === 'MENTOR' || userRole === 'TEACHER';
 
-  const filtered = jobs.filter(j => {
+  // Merge platform jobs with default jobs
+  const allJobs = [...platformJobs, ...DEFAULT_JOBS];
+
+  const filtered = allJobs.filter(j => {
     if (filter !== 'All' && j.type !== filter && !j.title.toLowerCase().includes(filter.toLowerCase())) return false;
     if (search && !j.title.toLowerCase().includes(search.toLowerCase()) && !j.company.toLowerCase().includes(search.toLowerCase())) return false;
     return true;
   });
 
-  const matches = jobs.filter(j => calcMatch(j.skills) >= 70).length;
+  const matches = allJobs.filter(j => calcMatch(j.skills) >= 70).length;
 
   const handleApply = (jobId) => {
     setApplied(prev => new Set([...prev, jobId]));
+    applyJob(jobId, userName);
   };
 
   const handleAddJob = () => {

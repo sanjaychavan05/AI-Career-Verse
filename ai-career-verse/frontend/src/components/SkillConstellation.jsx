@@ -92,10 +92,9 @@ export default function SkillConstellation({ onNavigate }) {
                   key={i}
                   x1={source.x} y1={source.y}
                   x2={target.x} y2={target.y}
-                  stroke={isHighlighted ? '#10B981' : 'currentColor'}
-                  className={isHighlighted ? '' : 'dark:text-charcoal-border text-gray-200'}
-                  strokeWidth={isHighlighted ? 0.5 : 0.2}
-                  strokeOpacity={isHighlighted ? 0.8 : 0.4}
+                  stroke={isHighlighted ? '#10B981' : '#6366F1'}
+                  strokeWidth={isHighlighted ? 0.7 : 0.45}
+                  strokeOpacity={isHighlighted ? 0.9 : 0.55}
                   style={{ transition: 'all 0.3s ease' }}
                 />
               );
