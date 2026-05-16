@@ -4,6 +4,7 @@ import { Zap, Flame, TrendingUp, Target, Briefcase, Code2, ChevronLeft, ChevronR
 import { useGamification } from '../context/GamificationContext';
 import { useUser } from '../context/UserContext';
 import { usePlatform } from '../context/PlatformContext';
+import { useWebSocket } from '../context/WebSocketContext';
 
 const WAVE_DATA = { learning:[32,45,40,55,48,62,55], coding:[25,38,52,45,58,50,42], interview:[18,22,30,28,35,32,25] };
 const WAVE_CONFIGS = [
@@ -93,10 +94,28 @@ function StudentDashboard({ stats }) {
 
 /* ═══════ MENTOR DASHBOARD ═══════ */
 function MentorDashboard() {
-  const { mentorRequests, acceptRequest, rejectRequest, jobs } = usePlatform();
-  const pending = mentorRequests.filter(r => r.status === 'pending');
-  const accepted = mentorRequests.filter(r => r.status === 'accepted');
+  const { jobs } = usePlatform();
+  const { user } = useUser();
+  const ws = useWebSocket();
+  const userEmail = user?.email || '';
+  const userName = user?.name || 'Mentor';
+
+  // Get connect requests from WebSocket (persisted server-side)
+  const incomingRequests = ws.connectRequests.filter(r => r.mentorEmail === userEmail);
+  const pending = incomingRequests.filter(r => r.status === 'PENDING');
+  const accepted = incomingRequests.filter(r => r.status === 'ACCEPTED');
   const myJobs = jobs.filter(j => j.postedRole === 'MENTOR');
+
+  const handleRespond = (request, accept) => {
+    ws.respondToConnect({
+      requestId: request.requestId,
+      mentorName: userName,
+      mentorEmail: userEmail,
+      studentEmail: request.studentEmail,
+      status: accept ? 'ACCEPTED' : 'REJECTED',
+      message: accept ? 'Happy to connect!' : 'Not available at this time.',
+    });
+  };
 
   return (
     <>
@@ -120,11 +139,15 @@ function MentorDashboard() {
           {pending.length === 0 ? <p className="text-sm dark:text-gray-500 text-gray-400">No pending requests</p> : (
             <div className="space-y-3">
               {pending.map(r => (
-                <div key={r.id} className="flex items-center justify-between p-3 rounded-xl dark:bg-white/[0.02] bg-gray-50 border dark:border-white/[0.04] border-gray-200/40">
-                  <div><p className="text-sm font-bold dark:text-white text-gray-900">{r.student}</p><p className="text-xs dark:text-gray-500 text-gray-400">Requested mentorship</p></div>
+                <div key={r.requestId} className="p-3 rounded-xl dark:bg-white/[0.02] bg-gray-50 border dark:border-white/[0.04] border-gray-200/40">
+                  <div className="flex items-center justify-between mb-1">
+                    <p className="text-sm font-bold dark:text-white text-gray-900">{r.studentName}</p>
+                    <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/20">Pending</span>
+                  </div>
+                  <p className="text-xs dark:text-gray-400 text-gray-500 mb-2">{r.message || 'Requesting mentorship'}</p>
                   <div className="flex gap-2">
-                    <button onClick={()=>acceptRequest(r.id)} className="px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20">Accept</button>
-                    <button onClick={()=>rejectRequest(r.id)} className="px-3 py-1.5 rounded-lg text-xs font-bold bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/20">Decline</button>
+                    <button onClick={()=>handleRespond(r, true)} className="px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20">Accept</button>
+                    <button onClick={()=>handleRespond(r, false)} className="px-3 py-1.5 rounded-lg text-xs font-bold bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/20">Decline</button>
                   </div>
                 </div>
               ))}
@@ -132,7 +155,7 @@ function MentorDashboard() {
           )}
           {accepted.length > 0 && (
             <div className="mt-4"><p className="text-xs font-bold dark:text-gray-400 text-gray-500 uppercase tracking-wider mb-2">Active Mentees</p>
-              {accepted.map(r => (<div key={r.id} className="flex items-center gap-2 py-1.5"><CheckCircle2 size={14} className="text-emerald-400"/><span className="text-sm dark:text-gray-300 text-gray-600">{r.student}</span></div>))}
+              {accepted.map(r => (<div key={r.requestId} className="flex items-center gap-2 py-1.5"><CheckCircle2 size={14} className="text-emerald-400"/><span className="text-sm dark:text-gray-300 text-gray-600">{r.studentName}</span></div>))}
             </div>
           )}
         </div>
@@ -156,7 +179,8 @@ function MentorDashboard() {
 
 /* ═══════ TEACHER DASHBOARD ═══════ */
 function TeacherDashboard() {
-  const { students, jobs, mentorRequests } = usePlatform();
+  const { students, jobs } = usePlatform();
+  const ws = useWebSocket();
   const placementReady = students.filter(s => s.placementReady).length;
   const avgReadiness = Math.round(students.reduce((s,st) => s+st.careerReadiness, 0) / students.length);
   const totalApps = jobs.reduce((s,j) => s+j.applied.length, 0);
@@ -213,7 +237,7 @@ function TeacherDashboard() {
             <div className="flex justify-between"><span className="text-sm dark:text-gray-400 text-gray-500">Placement Ready</span><span className="text-sm font-bold dark:text-emerald-400 text-emerald-600">{placementReady}/{students.length}</span></div>
             <div className="flex justify-between"><span className="text-sm dark:text-gray-400 text-gray-500">Avg Career Readiness</span><span className="text-sm font-bold dark:text-violet-400 text-violet-600">{avgReadiness}%</span></div>
             <div className="flex justify-between"><span className="text-sm dark:text-gray-400 text-gray-500">Avg ATS Score</span><span className="text-sm font-bold dark:text-blue-400 text-blue-600">{Math.round(students.reduce((s,st) => s+st.atsScore, 0) / students.length)}%</span></div>
-            <div className="flex justify-between"><span className="text-sm dark:text-gray-400 text-gray-500">Mentorship Requests</span><span className="text-sm font-bold dark:text-cyan-400 text-cyan-600">{mentorRequests.length}</span></div>
+            <div className="flex justify-between"><span className="text-sm dark:text-gray-400 text-gray-500">Mentorship Requests</span><span className="text-sm font-bold dark:text-cyan-400 text-cyan-600">{ws.connectRequests.length}</span></div>
           </div>
         </div>
         <div className="glass-card p-5">

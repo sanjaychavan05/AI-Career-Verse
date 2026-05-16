@@ -1,4 +1,4 @@
-import { LayoutDashboard, User, FileText, Network, Dna, Mic, Map, Download, Briefcase, Users, BookOpen, UserCircle, Flame, Zap, Code2 } from 'lucide-react';
+import { LayoutDashboard, User, FileText, Network, Dna, Mic, Map, Download, Briefcase, Users, BookOpen, UserCircle, Flame, Zap, Code2, Radio } from 'lucide-react';
 import { motion } from 'framer-motion';
 import ThemeToggle from './ThemeToggle';
 import { useGamification } from '../context/GamificationContext';
@@ -17,6 +17,7 @@ const allNavItems = [
   { id: 'coding', label: 'Coding Practice', icon: Code2, roles: ['STUDENT'] },
   { id: 'roadmap', label: 'Career Roadmap', icon: Map, roles: ['STUDENT'] },
   { id: 'jobs', label: 'Job Matching', icon: Briefcase, roles: ['STUDENT','MENTOR','TEACHER'] },
+  { id: 'mentor-connect', label: 'Mentor Connect', icon: Radio, roles: ['STUDENT','MENTOR','TEACHER'] },
   { id: 'learning', label: 'Learning Hub', icon: BookOpen, roles: ['STUDENT'] },
   { id: 'community', label: 'Community', icon: Users, roles: ['STUDENT','MENTOR','TEACHER'] },
   { id: 'profile', label: 'Profile', icon: UserCircle, roles: ['STUDENT','MENTOR','TEACHER'] },

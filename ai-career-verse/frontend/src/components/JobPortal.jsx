@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, MapPin, IndianRupee, Clock, ExternalLink, Heart, Filter, Sparkles, CheckCircle2, Briefcase, Plus, X } from 'lucide-react';
+import { Search, MapPin, IndianRupee, Clock, ExternalLink, Heart, Filter, Sparkles, CheckCircle2, Briefcase, Plus, X, Wifi, Radio } from 'lucide-react';
 import { useGamification } from '../context/GamificationContext';
 import { useUser } from '../context/UserContext';
 import { usePlatform } from '../context/PlatformContext';
+import { useWebSocket } from '../context/WebSocketContext';
 
 const USER_SKILLS = ['Python', 'Django', 'React', 'Node.js', 'PostgreSQL', 'Flask', 'JavaScript', 'Docker', 'Git', 'Tailwind CSS', 'Java', 'Spring Boot'];
 const FILTERS = ['All', 'Full-time', 'Frontend', 'Backend', 'DevOps', 'Remote'];
@@ -25,6 +26,7 @@ export default function JobPortal() {
   const { stats } = useGamification();
   const { user } = useUser();
   const { jobs: platformJobs, addJob, applyJob } = usePlatform();
+  const ws = useWebSocket();
   const userRole = user?.role || 'STUDENT';
   const userName = user?.name || 'Sanjay Chavan';
 
@@ -38,8 +40,32 @@ export default function JobPortal() {
 
   const canAddJobs = userRole === 'MENTOR' || userRole === 'TEACHER';
 
-  // Merge platform jobs with default jobs
-  const allJobs = [...platformJobs, ...DEFAULT_JOBS];
+  // Merge platform jobs + live WebSocket jobs + default jobs
+  // Deduplicate: skip WS jobs that already exist in platformJobs (same title + company)
+  const platformTitles = new Set(platformJobs.map((j) => `${j.title}|${j.company}`));
+  const defaultTitles = new Set(DEFAULT_JOBS.map((j) => `${j.title}|${j.company}`));
+  const wsJobs = ws.jobFeed
+    .filter((j) => {
+      const key = `${j.title}|${j.company}`;
+      return !platformTitles.has(key) && !defaultTitles.has(key);
+    })
+    .map((j) => ({
+      id: j.id,
+      title: j.title,
+      company: j.company,
+      location: j.location || 'Remote',
+      type: j.type || 'Full-time',
+      salary: j.salary || 'Competitive',
+      exp: j.experience || '—',
+      applicants: 0,
+      skills: j.skills || [],
+      desc: j.description || '',
+      postedBy: j.postedBy,
+      postedRole: j.postedByRole,
+      applied: [],
+      isLive: true,
+    }));
+  const allJobs = [...wsJobs, ...platformJobs, ...DEFAULT_JOBS];
 
   const filtered = allJobs.filter(j => {
     if (filter !== 'All' && j.type !== filter && !j.title.toLowerCase().includes(filter.toLowerCase())) return false;
@@ -56,13 +82,34 @@ export default function JobPortal() {
 
   const handleAddJob = () => {
     if (!newJob.title || !newJob.company) return;
+    const skillsList = newJob.skills.split(',').map(s => s.trim()).filter(Boolean);
+
+    // Add to local state
     addJob({
       ...newJob,
-      skills: newJob.skills.split(',').map(s => s.trim()).filter(Boolean),
+      skills: skillsList,
       applicants: 0,
       postedBy: userName,
       postedRole: userRole,
     });
+
+    // Broadcast via WebSocket to /topic/job-feed
+    if (ws.connected) {
+      ws.postJobToFeed({
+        title: newJob.title,
+        company: newJob.company,
+        location: newJob.location,
+        type: newJob.type,
+        salary: newJob.salary,
+        experience: newJob.exp,
+        description: newJob.desc,
+        skills: skillsList,
+        postedBy: userName,
+        postedByRole: userRole,
+        postedByEmail: user?.email || '',
+      });
+    }
+
     setShowAddJob(false);
     setNewJob({ title:'', company:'', location:'', type:'Full-time', salary:'', exp:'', skills:'', desc:'' });
   };
@@ -76,6 +123,13 @@ export default function JobPortal() {
         </div>
         <div className="flex items-center gap-3">
           <span className="px-3 py-1.5 rounded-full bg-violet-500/10 border border-violet-500/20 text-violet-400 text-xs font-bold">{matches} Matches</span>
+          {ws.connected && (
+            <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-green-500/10 border border-green-500/20 text-green-400 text-xs font-bold">
+              <Wifi size={10} />
+              <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
+              Live
+            </span>
+          )}
           {canAddJobs && (
             <button onClick={() => setShowAddJob(true)}
               className="btn-primary flex items-center gap-2 text-sm">
@@ -119,8 +173,14 @@ export default function JobPortal() {
                 }`}>
                 <div className="flex items-start justify-between">
                   <div className="flex-1 min-w-0">
-                    <h4 className="text-sm font-bold dark:text-white text-gray-900 truncate">{job.title}</h4>
-                    <p className="text-xs dark:text-gray-400 text-gray-500 mt-0.5">{job.company}</p>
+                    <h4 className="text-sm font-bold dark:text-white text-gray-900 truncate flex items-center gap-1.5">
+                      {job.title}
+                      {job.isLive && <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse shrink-0" />}
+                    </h4>
+                    <p className="text-xs dark:text-gray-400 text-gray-500 mt-0.5">
+                      {job.company}
+                      {job.isLive && <span className="text-[9px] text-green-400 font-bold ml-1">LIVE</span>}
+                    </p>
                   </div>
                   <div className="flex items-center gap-1.5">
                     {isApplied && <span className="text-[9px] font-bold text-green-400 bg-green-500/10 px-1.5 py-0.5 rounded">Applied ✓</span>}
