@@ -6,7 +6,7 @@ import axios from 'axios';
 export default function AIMentorOrb() {
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState([
-    { role: 'mentor', text: "Hey! I'm **Aura**, your AI Career Mentor. Ask me anything about your Python Full Stack career — interview tips, project ideas, or skill roadmaps. 🚀" },
+    { role: 'mentor', text: "Hey! I'm **Aura**, your Career Mentor. Ask me anything about your Python Full Stack career — interview tips, project ideas, or skill roadmaps. 🚀" },
   ]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -87,7 +87,7 @@ export default function AIMentorOrb() {
                   <Bot size={16} className="text-white" />
                 </div>
                 <div>
-                  <h3 className="text-sm font-bold dark:text-white text-gray-900">Aura — AI Mentor</h3>
+                  <h3 className="text-sm font-bold dark:text-white text-gray-900">Aura — Career Mentor</h3>
                   <div className="flex items-center gap-1.5">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
                     <span className="text-[10px] dark:text-gray-500 text-gray-400">Online • Powered by Gemini</span>

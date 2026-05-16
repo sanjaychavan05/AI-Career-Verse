@@ -48,7 +48,7 @@ export default function Sidebar({ activeTab, setActiveTab }) {
           <h1 className="text-xl font-extrabold tracking-tight dark:text-white text-gray-900">
             Career<span className="text-blue-800 dark:text-blue-400">Verse</span>
           </h1>
-          <p className="text-[9px] font-mono dark:text-gray-500 text-gray-400 tracking-[0.18em] uppercase">AI Ecosystem</p>
+          <p className="text-[9px] font-mono dark:text-gray-500 text-gray-400 tracking-[0.18em] uppercase">Career Ecosystem</p>
         </div>
       </div>
 

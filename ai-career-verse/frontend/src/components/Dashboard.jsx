@@ -58,12 +58,13 @@ function StudentDashboard({ stats }) {
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
         <div className="lg:col-span-2 glass-card p-5">
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center justify-between mb-1">
             <h3 className="text-xs font-bold dark:text-white text-gray-900 uppercase tracking-wider">Weekly Activity</h3>
             <div className="flex items-center gap-4">
               {WAVE_CONFIGS.map(w => (<span key={w.key} className="flex items-center gap-1.5 text-xs dark:text-gray-400 text-gray-500"><span className="w-2.5 h-2.5 rounded-full" style={{background:w.color}}/>{w.label}</span>))}
             </div>
           </div>
+          <p className="text-[10px] dark:text-gray-500 text-gray-400 mb-3">Hours spent each day — Learning (courses), Coding (problems solved), Interview (mock sessions)</p>
           <svg viewBox={`0 0 ${svgW} ${svgH}`} className="w-full">
             {[0,25,50,75].map(v => { const y=svgH-padY-((v/maxVal)*(svgH-padY*2)); return <line key={v} x1={padX} y1={y} x2={svgW-20} y2={y} stroke="currentColor" className="dark:text-white/[0.04] text-gray-200" strokeWidth="0.5"/>; })}
             {DAYS.map((d,i) => { const x=padX+i*((svgW-padX*2)/6); return <text key={d} x={x} y={svgH-5} textAnchor="middle" className="dark:fill-gray-500 fill-gray-400" fontSize="11" fontFamily="Inter">{d}</text>; })}
@@ -72,7 +73,7 @@ function StudentDashboard({ stats }) {
         </div>
         <div className="glass-card p-5 flex flex-col">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-xs font-bold dark:text-white text-gray-900 uppercase tracking-wider flex items-center gap-1.5"><Sparkles size={13} className="text-violet-400"/> AI Insights</h3>
+            <h3 className="text-xs font-bold dark:text-white text-gray-900 uppercase tracking-wider flex items-center gap-1.5"><Sparkles size={13} className="text-violet-400"/> Smart Insights</h3>
             <div className="flex items-center gap-1">
               <button onClick={()=>setInsightIdx(p=>Math.max(0,p-1))} className="w-6 h-6 rounded-md dark:bg-white/[0.04] bg-gray-100 flex items-center justify-center dark:text-gray-400 text-gray-500"><ChevronLeft size={12}/></button>
               <button onClick={()=>setInsightIdx(p=>Math.min(AI_INSIGHTS.length-3,p+1))} className="w-6 h-6 rounded-md dark:bg-white/[0.04] bg-gray-100 flex items-center justify-center dark:text-gray-400 text-gray-500"><ChevronRight size={12}/></button>

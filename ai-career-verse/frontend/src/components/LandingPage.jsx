@@ -11,7 +11,7 @@ const ROLES = [
     description: 'Track skills, practice interviews, build your career DNA',
     gradient: 'from-violet-600 to-purple-700',
     shadow: 'shadow-violet-600/30',
-    features: ['AI Interview Lab', 'Career DNA Analysis', 'Skill Constellation', 'Resume Scorer'],
+    features: ['Interview Lab', 'Career DNA Analysis', 'Skill Constellation', 'Resume Scorer'],
   },
   {
     id: 'MENTOR',
@@ -104,9 +104,9 @@ export default function LandingPage({ onAuth }) {
             </div>
             <div>
               <h1 className="text-base font-extrabold tracking-tight">
-                AI Career<span className="text-blue-500">Verse</span>
+                Career<span className="text-blue-500">Verse</span>
               </h1>
-              <p className="text-[8px] font-mono text-gray-600 tracking-[0.18em] uppercase">Powered by AI</p>
+              <p className="text-[8px] font-mono text-gray-600 tracking-[0.18em] uppercase">Career Ecosystem</p>
             </div>
           </div>
           <div className="flex items-center gap-3">
@@ -124,7 +124,7 @@ export default function LandingPage({ onAuth }) {
         <div className="relative z-10 max-w-6xl mx-auto px-8 pt-16 pb-24 text-center">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}>
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/[0.04] border border-white/[0.06] text-xs font-semibold text-gray-400 mb-6">
-              <Sparkles size={12} className="text-violet-400" /> AI-Powered Career Intelligence Platform
+              <Sparkles size={12} className="text-violet-400" /> Smart Career Intelligence Platform
             </div>
 
             <h1 className="text-5xl md:text-6xl font-extrabold leading-tight tracking-tight max-w-4xl mx-auto">
@@ -136,7 +136,7 @@ export default function LandingPage({ onAuth }) {
             </h1>
 
             <p className="text-lg text-gray-400 max-w-2xl mx-auto mt-6 leading-relaxed">
-              AI CareerVerse combines artificial intelligence with career development — from skill tracking
+              CareerVerse combines intelligent insights with career development — from skill tracking
               and interview prep to resume optimization and career DNA analysis.
             </p>
 
@@ -217,7 +217,7 @@ export default function LandingPage({ onAuth }) {
             <Zap size={22} className="text-white" />
           </div>
           <h1 className="text-xl font-extrabold">
-            AI Career<span className="text-blue-500">Verse</span>
+            Career<span className="text-blue-500">Verse</span>
           </h1>
         </div>
 

@@ -40,13 +40,38 @@ export default function Community() {
         { name: 'Kavya Nair', xp: 7600, streak: 9, careerReadiness: 74, role: 'ML Engineer' },
       ]));
   }, []);
+  const [newPost, setNewPost] = useState('');
+  const [postChannel, setPostChannel] = useState('General');
+  const [userPosts, setUserPosts] = useState([]);
+  const [showCompose, setShowCompose] = useState(false);
 
   const openProfile = (name) => {
     const u = leaderboard.find(l => l.name === name) || POSTS.find(p => p.author === name);
     if (u) setShowProfileModal({ name: u.name || u.author, role: u.role, xp: u.xp || 0, streak: u.streak || 0, readiness: u.careerReadiness || 0, avatar: (u.name || u.author || '').split(' ').map(w => w[0]).join('') });
   };
 
-  const filteredPosts = activeChannel === 'General' ? POSTS : POSTS.filter(p => p.channel === activeChannel);
+  const handlePost = () => {
+    if (!newPost.trim()) return;
+    const initials = userName.split(' ').map(w => w[0]).join('').toUpperCase();
+    const post = {
+      id: Date.now(),
+      author: userName,
+      avatar: initials,
+      role: userRole === 'STUDENT' ? 'Student' : userRole === 'MENTOR' ? 'Mentor' : 'Teacher',
+      channel: postChannel,
+      time: 'Just now',
+      content: newPost,
+      likes: 0,
+      replies: 0,
+      tag: '💬 Discussion',
+    };
+    setUserPosts(prev => [post, ...prev]);
+    setNewPost('');
+    setShowCompose(false);
+  };
+
+  const allPosts = [...userPosts, ...POSTS];
+  const filteredPosts = activeChannel === 'General' ? allPosts : allPosts.filter(p => p.channel === activeChannel);
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-5">
@@ -55,6 +80,10 @@ export default function Community() {
           <h2 className="text-2xl font-bold dark:text-white text-gray-900">Community</h2>
           <p className="text-sm dark:text-gray-400 text-gray-500 mt-1">Connect, share, and grow with fellow developers</p>
         </div>
+        <button onClick={() => setShowCompose(!showCompose)}
+          className="btn-primary text-sm px-4 py-2 flex items-center gap-1.5">
+          <MessageSquare size={14} /> New Post
+        </button>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
@@ -68,6 +97,45 @@ export default function Community() {
               </button>
             ))}
           </div>
+
+          {/* Compose Box */}
+          <AnimatePresence>
+            {showCompose && (
+              <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}
+                className="glass-card p-4 space-y-3">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center text-white text-[10px] font-bold">
+                    {userName.split(' ').map(w => w[0]).join('').toUpperCase()}
+                  </div>
+                  <span className="text-sm font-bold dark:text-white text-gray-900">{userName}</span>
+                </div>
+                <textarea
+                  value={newPost}
+                  onChange={(e) => setNewPost(e.target.value)}
+                  placeholder="Share your thoughts, tips, or questions..."
+                  className="w-full h-24 p-3 rounded-xl text-sm dark:bg-white/[0.03] bg-gray-50 dark:text-white text-gray-800 placeholder-gray-500 border dark:border-white/[0.06] border-gray-200 outline-none focus:border-violet-500/40 resize-none"
+                />
+                <div className="flex items-center justify-between">
+                  <div className="flex gap-1.5">
+                    {CHANNELS.map(c => (
+                      <button key={c} onClick={() => setPostChannel(c)}
+                        className={`px-2.5 py-1 rounded-md text-[10px] font-bold transition-all ${
+                          postChannel === c
+                            ? 'bg-violet-600 text-white'
+                            : 'dark:bg-white/[0.03] bg-gray-100 dark:text-gray-400 text-gray-500'
+                        }`}>
+                        {c}
+                      </button>
+                    ))}
+                  </div>
+                  <button onClick={handlePost} disabled={!newPost.trim()}
+                    className="btn-primary text-xs px-4 py-1.5 disabled:opacity-30">
+                    Post Discussion
+                  </button>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           {filteredPosts.map(post => {
             const isLiked = liked.has(post.id);

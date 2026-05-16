@@ -260,33 +260,30 @@ export default function CodingPractice() {
             </div>
           </div>
 
-          {/* Problem List */}
-          <div className="space-y-2">
+          {/* Problem Board — Grid Layout */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
             {filtered.map(p => {
               const isSolved = solved.has(p.id);
               return (
-                <motion.button key={p.id} whileHover={{ x: 3 }} onClick={() => selectProblem(p)}
-                  className={`w-full flex items-center gap-4 p-4 rounded-xl text-left transition-all border ${
+                <motion.button key={p.id} whileHover={{ y: -3, scale: 1.01 }} onClick={() => selectProblem(p)}
+                  className={`flex flex-col p-4 rounded-xl text-left transition-all border ${
                     isSolved
                       ? 'dark:bg-green-500/5 bg-green-50 dark:border-green-500/15 border-green-200/60'
-                      : 'glass-card hover:dark:border-white/[0.1] hover:border-gray-300'
+                      : 'glass-card hover:dark:border-white/[0.1] hover:border-gray-300 hover:shadow-lg hover:shadow-violet-600/5'
                   }`}>
-                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${
-                    isSolved ? 'bg-green-500/10 text-green-400' : 'dark:bg-white/[0.04] bg-gray-100 dark:text-gray-500 text-gray-400'
-                  }`}>
-                    {isSolved ? <CheckCircle2 size={16} /> : <Code2 size={16} />}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-bold dark:text-white text-gray-900">{p.id}. {p.title}</span>
-                      <span className={`text-xs px-2 py-0.5 rounded-md border font-semibold ${DIFF_BG[p.difficulty]} ${DIFF_COLORS[p.difficulty]}`}>{p.difficulty}</span>
-                      {p.lang && <span className="text-xs px-2 py-0.5 rounded-md dark:bg-white/[0.04] bg-gray-100 dark:text-gray-300 text-gray-500 font-semibold border dark:border-white/[0.06] border-gray-200">{LANG_ICONS[p.lang] || ''} {p.lang}</span>}
+                  <div className="flex items-center justify-between w-full mb-2">
+                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${
+                      isSolved ? 'bg-green-500/10 text-green-400' : 'dark:bg-white/[0.04] bg-gray-100 dark:text-gray-500 text-gray-400'
+                    }`}>
+                      {isSolved ? <CheckCircle2 size={16} /> : <Code2 size={16} />}
                     </div>
-                    <p className="text-xs dark:text-gray-500 text-gray-400 mt-0.5">{p.category}</p>
-                  </div>
-                  <div className="flex items-center gap-2">
                     <span className="text-xs font-bold font-mono dark:text-amber-400 text-amber-600">+{p.points} XP</span>
-                    <ChevronRight size={14} className="dark:text-gray-600 text-gray-400" />
+                  </div>
+                  <h4 className="text-sm font-bold dark:text-white text-gray-900 mb-1">{p.id}. {p.title}</h4>
+                  <p className="text-[10px] dark:text-gray-500 text-gray-400 mb-2">{p.category}</p>
+                  <div className="flex items-center gap-1.5 mt-auto">
+                    <span className={`text-[10px] px-2 py-0.5 rounded-md border font-semibold ${DIFF_BG[p.difficulty]} ${DIFF_COLORS[p.difficulty]}`}>{p.difficulty}</span>
+                    {p.lang && <span className="text-[10px] px-2 py-0.5 rounded-md dark:bg-white/[0.04] bg-gray-100 dark:text-gray-300 text-gray-500 font-semibold border dark:border-white/[0.06] border-gray-200">{LANG_ICONS[p.lang] || ''} {p.lang}</span>}
                   </div>
                 </motion.button>
               );
@@ -329,7 +326,7 @@ export default function CodingPractice() {
             <div className="space-y-3">
               <div className="glass-card overflow-hidden">
                 <div className="flex items-center justify-between px-4 py-2 border-b dark:border-white/[0.04] border-gray-200/40">
-                  <span className="text-xs font-bold dark:text-gray-400 text-gray-500 uppercase tracking-wider">JavaScript</span>
+                  <span className="text-xs font-bold dark:text-gray-400 text-gray-500 uppercase tracking-wider">{LANG_ICONS[selectedProblem.lang] || '📝'} {selectedProblem.lang || 'JavaScript'}</span>
                   <button onClick={runCode} disabled={running}
                     className="btn-primary text-xs px-4 py-1.5 flex items-center gap-1.5">
                     {running ? <><Timer size={12} className="animate-spin" /> Running...</> : <><Play size={12} /> Run Code</>}

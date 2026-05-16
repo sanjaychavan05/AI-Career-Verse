@@ -88,10 +88,9 @@ export default function MentorConnect() {
           <h2 className="text-2xl font-bold dark:text-white text-gray-900 flex items-center gap-2">
             <Radio size={24} className="text-violet-400" />
             Mentor Connect
-            <span className="text-sm font-mono ml-2">— Role-Mesh Live</span>
           </h2>
           <p className="text-sm dark:text-gray-400 text-gray-500 mt-1">
-            Real-time connection ecosystem powered by WebSocket
+            Connect with mentors and grow your career in real-time
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -129,40 +128,23 @@ export default function MentorConnect() {
         </div>
       </div>
 
-      {/* Status Banner */}
-      <div className="rounded-2xl p-5 dark:bg-gradient-to-r dark:from-violet-600/10 dark:via-indigo-600/5 dark:to-transparent bg-gradient-to-r from-violet-50 to-transparent border dark:border-violet-500/10 border-violet-200/50">
-        <div className="flex items-center gap-4">
-          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-violet-600/25">
-            <Zap size={20} className="text-white" />
-          </div>
-          <div className="flex-1">
-            <h3 className="text-sm font-bold dark:text-white text-gray-900">
-              WebSocket Broker Active
-            </h3>
-            <p className="text-xs dark:text-gray-400 text-gray-500 mt-0.5">
-              STOMP over SockJS • End-to-end real-time sync • No page refreshes
-            </p>
-          </div>
-          <div className="flex items-center gap-6 text-center">
-            <div>
-              <p className="text-lg font-extrabold font-mono dark:text-white text-gray-900">
-                {ws.jobFeed.length}
-              </p>
-              <p className="text-[9px] dark:text-gray-500 text-gray-400 uppercase tracking-wider">Live Jobs</p>
-            </div>
-            <div>
-              <p className="text-lg font-extrabold font-mono text-violet-400">
-                {userRole === 'STUDENT' ? sentRequests.length : incomingForMentor.length}
-              </p>
-              <p className="text-[9px] dark:text-gray-500 text-gray-400 uppercase tracking-wider">Requests</p>
-            </div>
-            <div>
-              <p className="text-lg font-extrabold font-mono text-green-400">
-                {ws.connectResponses.filter((r) => r.status === 'ACCEPTED').length}
-              </p>
-              <p className="text-[9px] dark:text-gray-500 text-gray-400 uppercase tracking-wider">Connected</p>
-            </div>
-          </div>
+      {/* Quick Stats */}
+      <div className="grid grid-cols-3 gap-3">
+        <div className="glass-card p-4 text-center">
+          <p className="text-lg font-extrabold font-mono dark:text-white text-gray-900">{ws.jobFeed.length}</p>
+          <p className="text-[9px] dark:text-gray-500 text-gray-400 uppercase tracking-wider">Live Jobs</p>
+        </div>
+        <div className="glass-card p-4 text-center">
+          <p className="text-lg font-extrabold font-mono text-violet-400">
+            {userRole === 'STUDENT' ? sentRequests.length : incomingForMentor.length}
+          </p>
+          <p className="text-[9px] dark:text-gray-500 text-gray-400 uppercase tracking-wider">Requests</p>
+        </div>
+        <div className="glass-card p-4 text-center">
+          <p className="text-lg font-extrabold font-mono text-green-400">
+            {ws.connectResponses.filter((r) => r.status === 'ACCEPTED').length}
+          </p>
+          <p className="text-[9px] dark:text-gray-500 text-gray-400 uppercase tracking-wider">Connected</p>
         </div>
       </div>
 
