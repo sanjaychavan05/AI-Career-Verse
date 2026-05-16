@@ -5,15 +5,15 @@ const PlatformContext = createContext(null);
 /* ───── Preset accounts ───── */
 export const PRESET_ACCOUNTS = {
   STUDENT: { name: 'Sanjay Chavan', email: 'sanjay@careerverse.in', password: 'student123', role: 'STUDENT' },
-  MENTOR:  { name: 'Priya Sharma', email: 'priya@careerverse.in', password: 'mentor123', role: 'MENTOR' },
-  TEACHER: { name: 'Prof. Anand Kulkarni', email: 'anand@careerverse.in', password: 'teacher123', role: 'TEACHER' },
+  MENTOR:  { name: 'Anusha M', email: 'anusha@careerverse.in', password: 'mentor123', role: 'MENTOR' },
+  TEACHER: { name: 'Prof. Manjunath Patil', email: 'manjunath@careerverse.in', password: 'teacher123', role: 'TEACHER' },
 };
 
 /* ───── Shared seed data ───── */
 const SEED_JOBS = [
-  { id: 1, title: 'Python Full Stack Developer', company: 'TCS Digital', location: 'Mumbai', salary: '₹8-12 LPA', type: 'Full-time', postedBy: 'Prof. Anand Kulkarni', postedRole: 'TEACHER', skills: ['Python', 'Django', 'React', 'PostgreSQL'], applied: [] },
-  { id: 2, title: 'Frontend Engineer', company: 'Infosys', location: 'Pune', salary: '₹6-10 LPA', type: 'Full-time', postedBy: 'Priya Sharma', postedRole: 'MENTOR', skills: ['React', 'JavaScript', 'Tailwind CSS'], applied: [] },
-  { id: 3, title: 'Backend Developer Intern', company: 'Wipro', location: 'Bangalore', salary: '₹25K/month', type: 'Internship', postedBy: 'Prof. Anand Kulkarni', postedRole: 'TEACHER', skills: ['Java', 'Spring Boot', 'MySQL'], applied: [] },
+  { id: 1, title: 'Python Full Stack Developer', company: 'TCS Digital', location: 'Mumbai', salary: '₹8-12 LPA', type: 'Full-time', postedBy: 'Prof. Manjunath Patil', postedRole: 'TEACHER', skills: ['Python', 'Django', 'React', 'PostgreSQL'], applied: [] },
+  { id: 2, title: 'Frontend Engineer', company: 'Infosys', location: 'Pune', salary: '₹6-10 LPA', type: 'Full-time', postedBy: 'Anusha M', postedRole: 'MENTOR', skills: ['React', 'JavaScript', 'Tailwind CSS'], applied: [] },
+  { id: 3, title: 'Backend Developer Intern', company: 'Wipro', location: 'Bangalore', salary: '₹25K/month', type: 'Internship', postedBy: 'Prof. Manjunath Patil', postedRole: 'TEACHER', skills: ['Java', 'Spring Boot', 'MySQL'], applied: [] },
 ];
 
 const SEED_STUDENTS = [

@@ -95,17 +95,24 @@ function StudentDashboard({ stats }) {
 
 /* ═══════ MENTOR DASHBOARD ═══════ */
 function MentorDashboard() {
-  const { jobs } = usePlatform();
+  const { jobs, students } = usePlatform();
   const { user } = useUser();
   const ws = useWebSocket();
   const userEmail = user?.email || '';
   const userName = user?.name || 'Mentor';
+  const [selectedStudent, setSelectedStudent] = useState(null);
 
   // Get connect requests from WebSocket (persisted server-side)
   const incomingRequests = ws.connectRequests.filter(r => r.mentorEmail === userEmail);
   const pending = incomingRequests.filter(r => r.status === 'PENDING');
   const accepted = incomingRequests.filter(r => r.status === 'ACCEPTED');
   const myJobs = jobs.filter(j => j.postedRole === 'MENTOR');
+
+  // Get student data for connected mentees
+  const connectedStudents = accepted.map(r => {
+    const s = students.find(st => st.email === r.studentEmail || st.name === r.studentName);
+    return s || { name: r.studentName || 'Student', email: r.studentEmail, xp: 0, streak: 0, careerReadiness: 0, codingSolved: 0, skills: [], level: 0, atsScore: 0 };
+  });
 
   const handleRespond = (request, accept) => {
     ws.respondToConnect({
@@ -134,6 +141,57 @@ function MentorDashboard() {
           </motion.div>
         )})}
       </div>
+
+      {/* ─── Student Progress Section ─── */}
+      {connectedStudents.length > 0 && (
+        <div className="glass-card p-5">
+          <h3 className="text-sm font-bold dark:text-white text-gray-900 mb-4 flex items-center gap-2">
+            <GraduationCap size={16} className="text-emerald-400"/> Student Progress
+            <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-bold">{connectedStudents.length} Mentees</span>
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+            {connectedStudents.map((st, i) => (
+              <motion.button key={i} onClick={() => setSelectedStudent(st)}
+                initial={{opacity:0,y:5}} animate={{opacity:1,y:0}} transition={{delay:i*0.05}}
+                className="text-left p-4 rounded-xl border dark:border-white/[0.06] border-gray-200 dark:bg-white/[0.02] bg-gray-50/50 hover:border-violet-500/30 hover:shadow-lg hover:shadow-violet-600/5 transition-all group">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center text-white text-xs font-bold">
+                    {st.name?.split(' ').map(w=>w[0]).join('').toUpperCase() || 'S'}
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold dark:text-white text-gray-900 group-hover:text-violet-500 transition-colors">{st.name}</p>
+                    <p className="text-[10px] dark:text-gray-500 text-gray-400">Level {st.level || 1} · {st.xp?.toLocaleString()} XP</p>
+                  </div>
+                </div>
+                <div className="grid grid-cols-3 gap-2">
+                  <div className="text-center p-2 rounded-lg dark:bg-white/[0.04] bg-white border dark:border-white/[0.04] border-gray-200/50">
+                    <p className="text-sm font-bold dark:text-emerald-400 text-emerald-600">{st.careerReadiness || 0}%</p>
+                    <p className="text-[9px] dark:text-gray-500 text-gray-400">Readiness</p>
+                  </div>
+                  <div className="text-center p-2 rounded-lg dark:bg-white/[0.04] bg-white border dark:border-white/[0.04] border-gray-200/50">
+                    <p className="text-sm font-bold dark:text-blue-400 text-blue-600">{st.codingSolved || 0}</p>
+                    <p className="text-[9px] dark:text-gray-500 text-gray-400">Solved</p>
+                  </div>
+                  <div className="text-center p-2 rounded-lg dark:bg-white/[0.04] bg-white border dark:border-white/[0.04] border-gray-200/50">
+                    <p className="text-sm font-bold dark:text-amber-400 text-amber-600">{st.streak || 0}d</p>
+                    <p className="text-[9px] dark:text-gray-500 text-gray-400">Streak</p>
+                  </div>
+                </div>
+                {/* Progress bar */}
+                <div className="mt-3">
+                  <div className="flex justify-between text-[9px] dark:text-gray-500 text-gray-400 mb-1">
+                    <span>Career Readiness</span><span>{st.careerReadiness || 0}%</span>
+                  </div>
+                  <div className="w-full h-1.5 rounded-full dark:bg-white/[0.06] bg-gray-200">
+                    <div className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-teal-400 transition-all" style={{width:`${st.careerReadiness || 0}%`}}/>
+                  </div>
+                </div>
+              </motion.button>
+            ))}
+          </div>
+        </div>
+      )}
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
         <div className="glass-card p-5">
           <h3 className="text-sm font-bold dark:text-white text-gray-900 mb-4 flex items-center gap-2"><Users size={16} className="text-violet-400"/> Mentorship Requests</h3>
@@ -154,11 +212,6 @@ function MentorDashboard() {
               ))}
             </div>
           )}
-          {accepted.length > 0 && (
-            <div className="mt-4"><p className="text-xs font-bold dark:text-gray-400 text-gray-500 uppercase tracking-wider mb-2">Active Mentees</p>
-              {accepted.map(r => (<div key={r.requestId} className="flex items-center gap-2 py-1.5"><CheckCircle2 size={14} className="text-emerald-400"/><span className="text-sm dark:text-gray-300 text-gray-600">{r.studentName}</span></div>))}
-            </div>
-          )}
         </div>
         <div className="glass-card p-5">
           <h3 className="text-sm font-bold dark:text-white text-gray-900 mb-4 flex items-center gap-2"><Briefcase size={16} className="text-blue-400"/> Jobs You Posted</h3>
@@ -174,6 +227,65 @@ function MentorDashboard() {
           )}
         </div>
       </div>
+
+      {/* ─── Student Profile Modal ─── */}
+      {selectedStudent && (
+        <motion.div initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
+          onClick={() => setSelectedStudent(null)}>
+          <motion.div initial={{scale:0.95,y:20}} animate={{scale:1,y:0}}
+            onClick={e => e.stopPropagation()}
+            className="w-full max-w-md mx-4 rounded-2xl dark:bg-[#0D1117] bg-white border dark:border-white/[0.06] border-gray-200 shadow-2xl p-6">
+            {/* Header */}
+            <div className="flex items-center gap-4 mb-5">
+              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center text-white text-lg font-bold shadow-lg">
+                {selectedStudent.name?.split(' ').map(w=>w[0]).join('').toUpperCase()}
+              </div>
+              <div>
+                <h3 className="text-lg font-bold dark:text-white text-gray-900">{selectedStudent.name}</h3>
+                <p className="text-xs dark:text-gray-400 text-gray-500">Level {selectedStudent.level || 1} · {selectedStudent.xp?.toLocaleString()} XP · {selectedStudent.streak}d streak</p>
+              </div>
+            </div>
+            {/* Stats Grid */}
+            <div className="grid grid-cols-2 gap-3 mb-5">
+              {[
+                { label:'Career Readiness', value:`${selectedStudent.careerReadiness||0}%`, color:'text-emerald-400', icon:'🎯' },
+                { label:'ATS Score', value:`${selectedStudent.atsScore||0}%`, color:'text-blue-400', icon:'📄' },
+                { label:'Problems Solved', value:selectedStudent.codingSolved||0, color:'text-violet-400', icon:'💻' },
+                { label:'GitHub Contributions', value:selectedStudent.github||0, color:'text-amber-400', icon:'🔗' },
+              ].map((s,i) => (
+                <div key={i} className="p-3 rounded-xl dark:bg-white/[0.03] bg-gray-50 border dark:border-white/[0.04] border-gray-200/40 text-center">
+                  <p className="text-lg mb-0.5">{s.icon}</p>
+                  <p className={`text-lg font-bold ${s.color}`}>{s.value}</p>
+                  <p className="text-[10px] dark:text-gray-500 text-gray-400">{s.label}</p>
+                </div>
+              ))}
+            </div>
+            {/* Skills */}
+            <div>
+              <p className="text-[10px] font-bold dark:text-gray-400 text-gray-500 uppercase tracking-wider mb-2">Skills</p>
+              <div className="flex gap-1.5 flex-wrap">
+                {(selectedStudent.skills || []).map(s => (
+                  <span key={s} className="tag-badge">{s}</span>
+                ))}
+              </div>
+            </div>
+            {/* Placement Status */}
+            <div className="mt-4 flex items-center gap-2">
+              {selectedStudent.placementReady ? (
+                <span className="text-xs font-bold px-3 py-1.5 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center gap-1"><CheckCircle2 size={12}/> Placement Ready</span>
+              ) : (
+                <span className="text-xs font-bold px-3 py-1.5 rounded-lg bg-amber-500/10 text-amber-400 border border-amber-500/20 flex items-center gap-1"><Clock size={12}/> In Progress</span>
+              )}
+            </div>
+            {/* Close */}
+            <button onClick={() => setSelectedStudent(null)}
+              className="w-full mt-5 py-2.5 rounded-xl text-xs font-bold dark:bg-white/[0.04] bg-gray-100 dark:text-gray-400 text-gray-500 hover:bg-violet-500/10 hover:text-violet-400 transition-all">
+              Close
+            </button>
+          </motion.div>
+        </motion.div>
+      )}
     </>
   );
 }

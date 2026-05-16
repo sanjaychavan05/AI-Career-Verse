@@ -195,7 +195,7 @@ export default function JobPortal() {
                 <div className="flex items-center gap-1.5 mt-2 flex-wrap">
                   {job.skills.slice(0,3).map(s=>{
                     const has = USER_SKILLS.some(us=>us.toLowerCase()===s.toLowerCase());
-                    return <span key={s} className={`text-[9px] font-bold px-1.5 py-0.5 rounded ${has?'bg-violet-500/10 text-violet-400 border border-violet-500/20':'dark:bg-white/[0.04] bg-gray-100 dark:text-gray-500 text-gray-400'}`}>{s}</span>;
+                    return <span key={s} className={`tag-badge ${has?'!bg-violet-500/10 !text-violet-400 !border-violet-500/20':''}`}>{s}</span>;
                   })}
                   {match >= 70 && <span className="ml-auto text-[10px] font-bold text-violet-400">🔥 {match}%</span>}
                 </div>

@@ -1,77 +1,86 @@
 import { useRef, useState } from 'react';
 import { Download, Printer } from 'lucide-react';
 import { useGamification } from '../context/GamificationContext';
+import { useUser } from '../context/UserContext';
 
-// Arjun Mehta's complete profile — matching the exact styling from screenshots
-const PROFILE = {
-  name: 'Arjun Mehta',
-  title: 'Python Full Stack Developer',
-  email: 'arjun.mehta@email.com',
-  phone: '+91 98765 43210',
-  location: 'India',
-  website: 'arjunmehta.dev',
-  github: 'github.com/arjunmehta',
-  summary: 'Passionate Python Full Stack Developer with expertise in building scalable web applications using Django, Flask, React.js, and PostgreSQL. Code Bharat 2025 3rd Place winner. Experienced in developing end-to-end solutions from database design to responsive frontend interfaces. Committed to writing clean, maintainable code and delivering impactful products.',
-  skills: {
-    'Languages': ['Python', 'JavaScript', 'TypeScript', 'SQL', 'HTML/CSS'],
-    'Backend': ['Django', 'Flask', 'Node.js', 'REST APIs', 'GraphQL'],
-    'Frontend': ['React.js', 'Tailwind CSS', 'Next.js', 'Redux'],
-    'Database': ['PostgreSQL', 'MongoDB', 'Redis', 'H2'],
-    'Tools': ['Git', 'Docker', 'Linux', 'AWS', 'CI/CD'],
-  },
-  experience: [
-    {
-      role: 'Python Full Stack Developer',
-      company: 'Career Verse Project',
-      period: '2024 - Present',
-      points: [
-        'Designed and built a full-stack career guidance platform using React.js and Spring Boot',
-        'Integrated Google Gemini API for intelligent interview evaluation and career DNA analysis',
-        'Implemented gamification system tracking 12,450+ XP across coding, interviews, and skill development',
-        'Built real-time GitHub profile analytics with language distribution and repository insights',
-      ],
+// Build profile from logged-in user
+function buildProfile(user, stats) {
+  const name = user?.name || 'Student';
+  const email = user?.email || 'student@careerverse.in';
+  const initials = name.split(' ').map(w => w[0]).join('').toLowerCase();
+
+  return {
+    name,
+    title: 'Full Stack Developer',
+    email,
+    phone: '+91 98765 43210',
+    location: 'India',
+    website: `${initials}.dev`,
+    github: `github.com/${initials}`,
+    summary: `Passionate Full Stack Developer with expertise in building scalable web applications using Django, Flask, React.js, and PostgreSQL. Code Bharat 2025 3rd Place winner. Experienced in developing end-to-end solutions from database design to responsive frontend interfaces. Committed to writing clean, maintainable code and delivering impactful products.`,
+    skills: {
+      'Languages': ['Python', 'JavaScript', 'TypeScript', 'SQL', 'HTML/CSS'],
+      'Backend': ['Django', 'Flask', 'Node.js', 'REST APIs', 'GraphQL'],
+      'Frontend': ['React.js', 'Tailwind CSS', 'Next.js', 'Redux'],
+      'Database': ['PostgreSQL', 'MongoDB', 'Redis', 'H2'],
+      'Tools': ['Git', 'Docker', 'Linux', 'AWS', 'CI/CD'],
     },
-  ],
-  education: [
-    {
-      degree: 'B.Tech in Computer Science & Engineering',
-      school: 'University',
-      period: '2021 - 2025',
-      gpa: '8.5/10',
-    },
-  ],
-  achievements: [
-    {
-      title: '🏆 3rd Place — Code Bharat Hackathon 2025',
-      description: 'Competed against 500+ teams nationwide. Built a career guidance platform in 36 hours. Recognized for innovative approach to career development.',
-    },
-    {
-      title: '🔥 23-Day Active Streak',
-      description: 'Maintained consistent daily coding and learning activity, demonstrating dedication and self-discipline.',
-    },
-    {
-      title: '💯 92% ATS Resume Score',
-      description: 'Achieved top-tier resume optimization score through intelligent analysis and targeted improvements.',
-    },
-  ],
-  projects: [
-    {
-      name: 'CareerVerse',
-      tech: 'React.js, Spring Boot, Gemini AI, H2 Database, Tailwind CSS',
-      description: 'Full-stack career platform with resume scoring, skill constellation visualization, career DNA analysis, interview lab with evaluation, and gamification engine.',
-    },
-    {
-      name: 'GitHub Digital Identity Hub',
-      tech: 'React.js, GitHub API, Axios, Framer Motion',
-      description: 'Real-time GitHub profile intelligence dashboard with language distribution charts, repository analytics, and contribution tracking.',
-    },
-  ],
-};
+    experience: [
+      {
+        role: 'Full Stack Developer',
+        company: 'Career Verse Project',
+        period: '2024 - Present',
+        points: [
+          'Designed and built a full-stack career guidance platform using React.js and Spring Boot',
+          'Integrated Google Gemini API for intelligent interview evaluation and career DNA analysis',
+          `Implemented gamification system tracking ${stats.xp.toLocaleString()}+ XP across coding, interviews, and skill development`,
+          'Built real-time GitHub profile analytics with language distribution and repository insights',
+        ],
+      },
+    ],
+    education: [
+      {
+        degree: 'B.Tech in Computer Science & Engineering',
+        school: 'University',
+        period: '2021 - 2025',
+        gpa: '8.5/10',
+      },
+    ],
+    achievements: [
+      {
+        title: '🏆 3rd Place — Code Bharat Hackathon 2025',
+        description: 'Competed against 500+ teams nationwide. Built a career guidance platform in 36 hours. Recognized for innovative approach to career development.',
+      },
+      {
+        title: `🔥 ${stats.streak}-Day Active Streak`,
+        description: 'Maintained consistent daily coding and learning activity, demonstrating dedication and self-discipline.',
+      },
+      {
+        title: '💯 92% ATS Resume Score',
+        description: 'Achieved top-tier resume optimization score through intelligent analysis and targeted improvements.',
+      },
+    ],
+    projects: [
+      {
+        name: 'CareerVerse',
+        tech: 'React.js, Spring Boot, Gemini AI, H2 Database, Tailwind CSS',
+        description: 'Full-stack career platform with resume scoring, skill constellation visualization, career DNA analysis, interview lab with evaluation, and gamification engine.',
+      },
+      {
+        name: 'GitHub Digital Identity Hub',
+        tech: 'React.js, GitHub API, Axios, Framer Motion',
+        description: 'Real-time GitHub profile intelligence dashboard with language distribution charts, repository analytics, and contribution tracking.',
+      },
+    ],
+  };
+}
 
 export default function ProExport() {
   const resumeRef = useRef(null);
   const [exporting, setExporting] = useState(false);
   const { stats } = useGamification();
+  const { user } = useUser();
+  const PROFILE = buildProfile(user, stats);
 
   const handleExportPDF = async () => {
     setExporting(true);
@@ -107,7 +116,7 @@ export default function ProExport() {
         heightLeft -= pageHeight;
       }
 
-      pdf.save('Arjun_Mehta_Resume.pdf');
+      pdf.save(`${PROFILE.name.replace(/\s+/g, '_')}_Resume.pdf`);
     } catch (err) {
       console.error('PDF export failed:', err);
     } finally {

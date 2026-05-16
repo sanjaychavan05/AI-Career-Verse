@@ -9,7 +9,7 @@ import axios from 'axios';
 const CHANNELS = ['General', 'Interview Tips', 'Project Ideas', 'Career Advice', 'Code Review'];
 
 const POSTS = [
-  { id:1, author:'Priya Sharma', avatar:'PS', role:'Full Stack Dev', channel:'General', time:'2 hours ago', content:'Just cleared my Google L4 interview! Happy to share my prep strategy with anyone interested. Used the Interview Lab here and it was incredibly helpful.', likes:42, replies:12, tag:'🎉 Achievement' },
+  { id:1, author:'Anusha M', avatar:'AM', role:'Full Stack Dev', channel:'General', time:'2 hours ago', content:'Just cleared my Google L4 interview! Happy to share my prep strategy with anyone interested. Used the Interview Lab here and it was incredibly helpful.', likes:42, replies:12, tag:'🎉 Achievement' },
   { id:2, author:'Rahul Patel', avatar:'RP', role:'Backend Engineer', channel:'Interview Tips', time:'5 hours ago', content:'Pro tip: When asked about system design, always start with requirements gathering. I made a framework that works every time. Check thread 👇', likes:38, replies:23, tag:'💡 Pro Tip' },
   { id:3, author:'Sneha Reddy', avatar:'SR', role:'DevOps Engineer', channel:'Project Ideas', time:'1 day ago', content:'Looking for collaborators on an open-source AI resume analyzer. Tech stack: Python + FastAPI + React. DM if interested!', likes:29, replies:8, tag:'🤝 Collab' },
   { id:4, author:'Arjun Mehta', avatar:'AM', role:'Python Full Stack', channel:'Career Advice', time:'2 days ago', content:'Completed my Career DNA analysis — turns out I\'m "The Builder" archetype with 94% Full Stack compatibility. Anyone else tried this?', likes:56, replies:15, tag:'🧬 Career DNA' },
@@ -34,7 +34,7 @@ export default function Community() {
       .then(({ data }) => setLeaderboard(data))
       .catch(() => setLeaderboard([
         { name: 'Arjun Mehta', xp: 12450, streak: 23, careerReadiness: 85, role: 'Python Full Stack' },
-        { name: 'Priya Sharma', xp: 11200, streak: 18, careerReadiness: 92, role: 'Full Stack Dev' },
+        { name: 'Anusha M', xp: 11200, streak: 18, careerReadiness: 92, role: 'Full Stack Dev' },
         { name: 'Rahul Patel', xp: 9800, streak: 15, careerReadiness: 88, role: 'Backend Engineer' },
         { name: 'Sneha Reddy', xp: 8900, streak: 12, careerReadiness: 79, role: 'DevOps Engineer' },
         { name: 'Kavya Nair', xp: 7600, streak: 9, careerReadiness: 74, role: 'ML Engineer' },
@@ -42,8 +42,15 @@ export default function Community() {
   }, []);
   const [newPost, setNewPost] = useState('');
   const [postChannel, setPostChannel] = useState('General');
-  const [userPosts, setUserPosts] = useState([]);
+  const [userPosts, setUserPosts] = useState(() => {
+    try { const s = localStorage.getItem('cv_community_posts'); return s ? JSON.parse(s) : []; } catch { return []; }
+  });
   const [showCompose, setShowCompose] = useState(false);
+
+  // Persist user posts to localStorage
+  useEffect(() => {
+    localStorage.setItem('cv_community_posts', JSON.stringify(userPosts));
+  }, [userPosts]);
 
   const openProfile = (name) => {
     const u = leaderboard.find(l => l.name === name) || POSTS.find(p => p.author === name);

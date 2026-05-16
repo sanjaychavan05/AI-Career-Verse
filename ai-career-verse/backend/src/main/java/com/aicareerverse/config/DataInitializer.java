@@ -45,17 +45,17 @@ public class DataInitializer {
             arjun.setCareerReadiness(85);
             userRepo.save(arjun);
 
-            // --- Priya Sharma (MENTOR) ---
-            UserProfile priya = new UserProfile("Priya Sharma", "priya.sharma@email.com", "Senior Full Stack Developer", UserRole.MENTOR);
-            priya.setXp(11200);
-            priya.setStreak(18);
-            priya.setLevel(11);
-            priya.setLocation("Bangalore, India");
-            priya.setSkills("React.js,Node.js,TypeScript,AWS,System Design,Python,Docker,Kubernetes,PostgreSQL,Redis");
-            priya.setLastActiveDate(LocalDate.now());
-            priya.setCareerReadiness(92);
-            priya.setBio("Senior developer at a FAANG company. Passionate about mentoring the next generation.");
-            userRepo.save(priya);
+            // --- Anusha M (MENTOR) ---
+            UserProfile anusha = new UserProfile("Anusha M", "anusha.m@email.com", "Senior Full Stack Developer", UserRole.MENTOR);
+            anusha.setXp(11200);
+            anusha.setStreak(18);
+            anusha.setLevel(11);
+            anusha.setLocation("Bangalore, India");
+            anusha.setSkills("React.js,Node.js,TypeScript,AWS,System Design,Python,Docker,Kubernetes,PostgreSQL,Redis");
+            anusha.setLastActiveDate(LocalDate.now());
+            anusha.setCareerReadiness(92);
+            anusha.setBio("Senior developer at a FAANG company. Passionate about mentoring the next generation.");
+            userRepo.save(anusha);
 
             // --- Rahul Patel (MENTOR) ---
             UserProfile rahul = new UserProfile("Rahul Patel", "rahul.patel@email.com", "Backend Engineer", UserRole.MENTOR);
@@ -89,8 +89,8 @@ public class DataInitializer {
             kavya.setCareerReadiness(74);
             userRepo.save(kavya);
 
-            // --- Dr. Anand Kumar (TEACHER) ---
-            UserProfile teacher = new UserProfile("Dr. Anand Kumar", "anand.kumar@email.com", "Professor - Computer Science", UserRole.TEACHER);
+            // --- Prof. Manjunath Patil (TEACHER) ---
+            UserProfile teacher = new UserProfile("Prof. Manjunath Patil", "manjunath.patil@email.com", "Professor - Computer Science", UserRole.TEACHER);
             teacher.setXp(5000);
             teacher.setStreak(30);
             teacher.setLevel(6);

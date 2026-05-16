@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Code2, Play, CheckCircle2, XCircle, Timer, Zap, Trophy, ChevronRight, Flame } from 'lucide-react';
 import { useGamification } from '../context/GamificationContext';
@@ -61,21 +61,24 @@ const PROBLEMS = [
     id: 9, title: 'List Comprehension Sum', difficulty: 'Easy', points: 50, category: 'Lists', lang: 'Python',
     description: 'Given a list of numbers, return the sum of all even numbers using list comprehension.\n\nWrite a function that filters even numbers and sums them.',
     examples: [{ input: 'nums = [1,2,3,4,5,6]', output: '12', explanation: '2+4+6 = 12' }],
-    starterCode: `function sumEvens(nums) {\n  // Simulate Python: sum of even numbers\n  \n}`,
+    starterCode: `function sumEvens(nums) {\n  # Python: sum of even numbers\n  # return sum(x for x in nums if x % 2 == 0)\n  \n}`,
+    editorLang: 'python',
     testCases: [{ input: [[1,2,3,4,5,6]], expected: 12 }, { input: [[2,4,6]], expected: 12 }, { input: [[1,3,5]], expected: 0 }],
   },
   {
     id: 10, title: 'Dictionary Key Count', difficulty: 'Easy', points: 50, category: 'HashMap', lang: 'Python',
     description: 'Given a string, count the frequency of each character and return an object/dictionary with the counts.',
     examples: [{ input: 's = "hello"', output: '{h:1, e:1, l:2, o:1}' }],
-    starterCode: `function charCount(s) {\n  // Count character frequencies\n  \n}`,
+    starterCode: `function charCount(s) {\n  # Python: count character frequencies\n  # Use a dict to track counts\n  \n}`,
+    editorLang: 'python',
     testCases: [{ input: ["aab"], expected: {a:2, b:1} }, { input: ["xyz"], expected: {x:1, y:1, z:1} }],
   },
   {
     id: 11, title: 'Find Duplicates', difficulty: 'Medium', points: 100, category: 'Sets', lang: 'Python',
     description: 'Given a list of integers, return a sorted list of elements that appear more than once.',
     examples: [{ input: 'nums = [1,2,3,2,4,3]', output: '[2,3]' }],
-    starterCode: `function findDuplicates(nums) {\n  // Find elements appearing more than once\n  \n}`,
+    starterCode: `function findDuplicates(nums) {\n  # Python: find elements appearing more than once\n  # Use set() for tracking\n  \n}`,
+    editorLang: 'python',
     testCases: [{ input: [[1,2,3,2,4,3]], expected: [2,3] }, { input: [[1,1,1]], expected: [1] }, { input: [[1,2,3]], expected: [] }],
   },
   // ─── JAVA ───
@@ -83,14 +86,16 @@ const PROBLEMS = [
     id: 12, title: 'Array Rotation', difficulty: 'Easy', points: 50, category: 'Arrays', lang: 'Java',
     description: 'Rotate an array to the right by k steps. For example, [1,2,3,4,5] rotated by 2 gives [4,5,1,2,3].',
     examples: [{ input: 'nums = [1,2,3,4,5], k = 2', output: '[4,5,1,2,3]' }],
-    starterCode: `function rotate(nums, k) {\n  // Rotate array right by k steps\n  \n}`,
+    starterCode: `function rotate(nums, k) {\n  // Java: Rotate array right by k steps\n  // Use modular arithmetic\n  \n}`,
+    editorLang: 'java',
     testCases: [{ input: [[1,2,3,4,5], 2], expected: [4,5,1,2,3] }, { input: [[1,2,3], 1], expected: [3,1,2] }],
   },
   {
     id: 13, title: 'String Reversal Words', difficulty: 'Medium', points: 100, category: 'Strings', lang: 'Java',
     description: 'Reverse the order of words in a string. "Hello World" becomes "World Hello".',
     examples: [{ input: 's = "the sky is blue"', output: '"blue is sky the"' }],
-    starterCode: `function reverseWords(s) {\n  // Reverse word order\n  \n}`,
+    starterCode: `function reverseWords(s) {\n  // Java: Reverse word order\n  // Split, reverse, join\n  \n}`,
+    editorLang: 'java',
     testCases: [{ input: ["the sky is blue"], expected: "blue is sky the" }, { input: ["hello world"], expected: "world hello" }],
   },
   // ─── C ───
@@ -98,14 +103,16 @@ const PROBLEMS = [
     id: 14, title: 'Count Digits', difficulty: 'Easy', points: 50, category: 'Math', lang: 'C',
     description: 'Given a positive integer n, return the number of digits in n.',
     examples: [{ input: 'n = 12345', output: '5' }],
-    starterCode: `function countDigits(n) {\n  // Count number of digits\n  \n}`,
+    starterCode: `function countDigits(n) {\n  /* C: Count number of digits */\n  /* Use division loop */\n  \n}`,
+    editorLang: 'c',
     testCases: [{ input: [12345], expected: 5 }, { input: [0], expected: 1 }, { input: [100], expected: 3 }],
   },
   {
     id: 15, title: 'GCD (Euclidean)', difficulty: 'Easy', points: 50, category: 'Math', lang: 'C',
     description: 'Find the Greatest Common Divisor of two numbers using the Euclidean algorithm.',
     examples: [{ input: 'a = 12, b = 8', output: '4' }],
-    starterCode: `function gcd(a, b) {\n  // Euclidean GCD\n  \n}`,
+    starterCode: `function gcd(a, b) {\n  /* C: Euclidean GCD */\n  /* while (b != 0) ... */\n  \n}`,
+    editorLang: 'c',
     testCases: [{ input: [12, 8], expected: 4 }, { input: [7, 3], expected: 1 }, { input: [100, 25], expected: 25 }],
   },
   // ─── C++ ───
@@ -113,14 +120,16 @@ const PROBLEMS = [
     id: 16, title: 'Matrix Transpose', difficulty: 'Medium', points: 100, category: 'Matrix', lang: 'C++',
     description: 'Given a 2D matrix, return its transpose (rows become columns).',
     examples: [{ input: 'matrix = [[1,2,3],[4,5,6]]', output: '[[1,4],[2,5],[3,6]]' }],
-    starterCode: `function transpose(matrix) {\n  // Return transposed matrix\n  \n}`,
+    starterCode: `function transpose(matrix) {\n  // C++: Return transposed matrix\n  // Swap rows and columns\n  \n}`,
+    editorLang: 'cpp',
     testCases: [{ input: [[[1,2,3],[4,5,6]]], expected: [[1,4],[2,5],[3,6]] }, { input: [[[1,2],[3,4]]], expected: [[1,3],[2,4]] }],
   },
   {
     id: 17, title: 'Binary Search', difficulty: 'Easy', points: 50, category: 'Search', lang: 'C++',
     description: 'Given a sorted array nums and a target value, return the index of target or -1 if not found.',
     examples: [{ input: 'nums = [-1,0,3,5,9,12], target = 9', output: '4' }],
-    starterCode: `function search(nums, target) {\n  // Binary search\n  \n}`,
+    starterCode: `function search(nums, target) {\n  // C++: Binary search\n  // Use two pointers: left, right\n  \n}`,
+    editorLang: 'cpp',
     testCases: [{ input: [[-1,0,3,5,9,12], 9], expected: 4 }, { input: [[-1,0,3,5,9,12], 2], expected: -1 }],
   },
   // ─── DSA ───
@@ -163,9 +172,16 @@ export default function CodingPractice() {
   const [code, setCode] = useState('');
   const [results, setResults] = useState(null);
   const [running, setRunning] = useState(false);
-  const [solved, setSolved] = useState(new Set());
+  const [solved, setSolved] = useState(() => {
+    try { const s = localStorage.getItem('cv_solved'); return s ? new Set(JSON.parse(s)) : new Set(); } catch { return new Set(); }
+  });
   const [filter, setFilter] = useState('All');
   const [langFilter, setLangFilter] = useState('All');
+
+  // Persist solved set to localStorage
+  useEffect(() => {
+    localStorage.setItem('cv_solved', JSON.stringify([...solved]));
+  }, [solved]);
 
   const totalPoints = [...solved].reduce((sum, id) => {
     const p = PROBLEMS.find(pr => pr.id === id);
@@ -283,7 +299,7 @@ export default function CodingPractice() {
                   <p className="text-[10px] dark:text-gray-500 text-gray-400 mb-2">{p.category}</p>
                   <div className="flex items-center gap-1.5 mt-auto">
                     <span className={`text-[10px] px-2 py-0.5 rounded-md border font-semibold ${DIFF_BG[p.difficulty]} ${DIFF_COLORS[p.difficulty]}`}>{p.difficulty}</span>
-                    {p.lang && <span className="text-[10px] px-2 py-0.5 rounded-md dark:bg-white/[0.04] bg-gray-100 dark:text-gray-300 text-gray-500 font-semibold border dark:border-white/[0.06] border-gray-200">{LANG_ICONS[p.lang] || ''} {p.lang}</span>}
+                    {p.lang && <span className="tag-badge">{LANG_ICONS[p.lang] || ''} {p.lang}</span>}
                   </div>
                 </motion.button>
               );
