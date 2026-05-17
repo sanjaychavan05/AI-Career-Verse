@@ -130,7 +130,7 @@ export default function MentorConnect() {
   );
 
   const handleSendRequest = () => {
-    if (!showRequestModal || !message.trim()) return;
+    if (userRole !== 'STUDENT' || !showRequestModal || !message.trim()) return;
     ws.sendConnectRequest({
       studentName: userName,
       studentEmail: userEmail,
@@ -159,9 +159,15 @@ export default function MentorConnect() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold dark:text-white text-gray-900">Mentors</h2>
+          <h2 className="text-2xl font-bold dark:text-white text-gray-900">
+            {userRole === 'TEACHER' ? 'Mentor Directory' : userRole === 'MENTOR' ? 'Mentor Network' : 'Mentors'}
+          </h2>
           <p className="text-sm dark:text-gray-400 text-gray-500 mt-1">
-            Connect with industry experts for career guidance.
+            {userRole === 'TEACHER'
+              ? 'Oversee and manage available mentors for student guidance.'
+              : userRole === 'MENTOR'
+              ? 'Connect with peers and manage incoming requests.'
+              : 'Connect with industry experts for career guidance.'}
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -321,7 +327,7 @@ export default function MentorConnect() {
                 </div>
               </div>
 
-              {/* Action Buttons — Only students can request */}
+              {/* Action Buttons — Role-aware */}
               {reqStatus === 'ACCEPTED' ? (
                 <div className="flex gap-2">
                   <div className="flex-1 py-2.5 rounded-xl text-xs font-bold text-center bg-green-500/10 text-green-400 border border-green-500/20">Connected</div>
@@ -344,6 +350,22 @@ export default function MentorConnect() {
                 >
                   Request Mentorship
                 </button>
+              ) : userRole === 'TEACHER' ? (
+                /* Teachers see a read-only directory view — no request ability */
+                <div className={`w-full py-2.5 rounded-xl text-xs font-bold text-center border flex items-center justify-center gap-1.5 ${
+                  mentor.available
+                    ? 'dark:bg-cyan-500/10 bg-cyan-50 dark:text-cyan-400 text-cyan-600 dark:border-cyan-500/20 border-cyan-200'
+                    : 'dark:bg-white/[0.04] bg-gray-100 dark:text-gray-500 text-gray-400 dark:border-white/[0.06] border-gray-200'
+                }`}>
+                  <Shield size={12} />
+                  {mentor.available ? 'Available for Students' : 'Unavailable'}
+                </div>
+              ) : userRole === 'MENTOR' ? (
+                /* Mentors see peer-connect view */
+                <div className="w-full py-2.5 rounded-xl text-xs font-bold text-center dark:bg-violet-500/10 bg-violet-50 dark:text-violet-400 text-violet-600 border dark:border-violet-500/20 border-violet-200 flex items-center justify-center gap-1.5">
+                  <Users size={12} />
+                  Peer Mentor
+                </div>
               ) : !mentor.available ? (
                 <button disabled
                   className="w-full py-2.5 rounded-xl text-xs font-bold dark:bg-white/[0.04] bg-gray-100 dark:text-gray-500 text-gray-400 cursor-not-allowed">
@@ -391,9 +413,9 @@ export default function MentorConnect() {
         </div>
       )}
 
-      {/* ─── Request Modal ─── */}
+      {/* ─── Request Modal (Students only) ─── */}
       <AnimatePresence>
-        {showRequestModal && (
+        {userRole === 'STUDENT' && showRequestModal && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
